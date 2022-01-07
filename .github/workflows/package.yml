@@ -52,7 +52,7 @@ jobs:
 
       - name: Build arm64
         run: |
-           rm -rf ./arduino-cli*/
+          rm -rf ./arduino-cli*/
           export version=$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v')
           export current=$(cat current.txt)
           [ "$current" == "$version" ] && exit 0
