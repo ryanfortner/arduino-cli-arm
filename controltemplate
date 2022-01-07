@@ -1,0 +1,10 @@
+Package: arduino-cli
+Version: VTR
+Section: utils
+Priority: optional
+Architecture: armhf
+Depends: bash
+Maintainer: Ryan Fortner <ryankfortner@gmail.com>
+Description: Arduino command line tool
+Homepage: https://github.com/arduino/arduino-cli
+Bugs: https://github.com/arduino/arduino-cli/issues
