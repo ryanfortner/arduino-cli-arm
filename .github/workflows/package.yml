@@ -1,0 +1,92 @@
+name: package
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+         node-version: '14'
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y libarchive-tools dpkg-dev
+          
+      - name: Build armhf
+        run: |
+          rm -rf ./arduino-cli*/
+          export version=$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v')
+          export current=$(cat current.txt)
+          [ "$current" == "$version" ] && exit 0
+          mkdir arduino-cli-32 && cd arduino-cli-32
+          curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest \
+          | grep browser_download_url \
+          | grep 'ARMv7.tar.gz"' \
+          | cut -d '"' -f 4 \
+          | xargs -n 1 curl -L -o arduino-cli_${version}_armhf.tar.gz
+          mkdir deb
+          mkdir deb/DEBIAN
+          mkdir deb/usr/bin
+          mkdir deb/usr/share/doc/arduino-cli
+          tar -xvf arduino-cli_${version}_armhf.tar.gz
+          mv arduino-cli deb/usr/bin
+          cd deb/usr/share/doc/arduino-cli
+          wget https://github.com/ryanfortner/ryanfortner/releases/download/1002/arduino-cli-docs.zip
+          unzip arduino-cli-docs.zip && rm arduino-cli-docs.zip
+          cd ../../../../../
+          wget https://raw.githubusercontent.com/ryanfortner/arduino-cli-arm/master/controltemplate -O deb/DEBIAN/control
+          sed -i "s/VTR/$version/" deb/DEBIAN/control
+          chmod 755 deb/DEBIAN/*
+          cd ../
+          dpkg-deb --build ./arduino-cli-32/deb/ arduino-cli_${version}_armhf.deb
+
+      - name: Build arm64
+        run: |
+           rm -rf ./arduino-cli*/
+          export version=$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v')
+          export current=$(cat current.txt)
+          [ "$current" == "$version" ] && exit 0
+          mkdir arduino-cli-64 && cd arduino-cli-64
+          curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest \
+          | grep browser_download_url \
+          | grep 'ARM64.tar.gz"' \
+          | cut -d '"' -f 4 \
+          | xargs -n 1 curl -L -o arduino-cli_${version}_arm64.tar.gz
+          mkdir deb
+          mkdir deb/DEBIAN
+          mkdir deb/usr/bin
+          mkdir deb/usr/share/doc/arduino-cli
+          tar -xvf arduino-cli_${version}_arm64.tar.gz
+          mv arduino-cli deb/usr/bin
+          cd deb/usr/share/doc/arduino-cli
+          wget https://github.com/ryanfortner/ryanfortner/releases/download/1002/arduino-cli-docs.zip
+          unzip arduino-cli-docs.zip && rm arduino-cli-docs.zip
+          cd ../../../../../
+          wget https://raw.githubusercontent.com/ryanfortner/arduino-cli-arm/master/controltemplate -O deb/DEBIAN/control
+          sed -i "s/VTR/$version/" deb/DEBIAN/control
+          chmod 755 deb/DEBIAN/*
+          cd ../
+          dpkg-deb --build ./arduino-cli-64/deb/ arduino-cli_${version}_arm64.deb
+
+      - name: Upload
+        run: |
+          rm -rf ./arduino-cli*/
+          export version=$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v')
+          export current=$(cat current.txt)
+          [ "$current" == "$version" ] && exit 0
+          echo $version > current.txt
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add .
+          git commit -m "Upload arduino-cli v$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v')" 
+          git push
