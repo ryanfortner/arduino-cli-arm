@@ -35,9 +35,9 @@ jobs:
           | cut -d '"' -f 4 \
           | xargs -n 1 curl -L -o arduino-cli_${version}_armhf.tar.gz
           mkdir deb
-          mkdir deb/DEBIAN
-          mkdir deb/usr/bin
-          mkdir deb/usr/share/doc/arduino-cli
+          mkdir -p deb/DEBIAN
+          mkdir -p deb/usr/bin
+          mkdir -p deb/usr/share/doc/arduino-cli
           tar -xvf arduino-cli_${version}_armhf.tar.gz
           mv arduino-cli deb/usr/bin
           cd deb/usr/share/doc/arduino-cli
@@ -63,9 +63,9 @@ jobs:
           | cut -d '"' -f 4 \
           | xargs -n 1 curl -L -o arduino-cli_${version}_arm64.tar.gz
           mkdir deb
-          mkdir deb/DEBIAN
-          mkdir deb/usr/bin
-          mkdir deb/usr/share/doc/arduino-cli
+          mkdir -p deb/DEBIAN
+          mkdir -p deb/usr/bin
+          mkdir -p deb/usr/share/doc/arduino-cli
           tar -xvf arduino-cli_${version}_arm64.tar.gz
           mv arduino-cli deb/usr/bin
           cd deb/usr/share/doc/arduino-cli
