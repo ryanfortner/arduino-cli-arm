@@ -22,6 +22,10 @@ jobs:
           sudo apt update
           sudo apt install -y libarchive-tools dpkg-dev
           
+      - name: Remove old debs
+        run: |
+          rm -rf arduino-cli*.deb          
+
       - name: Build armhf
         run: |
           rm -rf ./arduino-cli*/
@@ -79,6 +83,15 @@ jobs:
           chmod 755 deb/DEBIAN/*
           cd ../
           dpkg-deb --build ./arduino-cli-64/deb/ arduino-cli_${version}_arm64.deb
+
+      - name: Create symlinks
+        run: |
+          export version=$(curl -s https://api.github.com/repos/arduino/arduino-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v')
+          export current=$(cat current.txt)
+          [ "$current" == "$version" ] && exit 0
+          rm -rf ./*latest.deb
+          ln -fs "$(find . -name '*arm64.deb' -type f -printf '%P\n' -quit)" starship-arm64-latest.deb
+          ln -fs "$(find . -name '*armhf.deb' -type f -printf '%P\n' -quit)" starship-armhf-latest.deb
 
       - name: Upload
         run: |
